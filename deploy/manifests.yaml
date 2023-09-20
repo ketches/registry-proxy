@@ -35,6 +35,37 @@ spec:
     group: cert-manager.io
 
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: registry-proxy
+  namespace: registry-proxy
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: registry-proxy
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: registry-proxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: registry-proxy
+subjects:
+- kind: ServiceAccount
+  name: registry-proxy
+  namespace: registry-proxy
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,6 +80,7 @@ spec:
       labels:
         app: registry-proxy
     spec:
+      serviceAccountName: registry-proxy
       containers:
       - name: registry-proxy
         image: ketches/registry-proxy:latest
@@ -90,7 +122,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: registry-proxy-webhook
   annotations:
-    cert-manager.io/inject-ca-from: registry-proxy/registry-proxy-cert # 这是必要的，帮助重写 caBundle 字段值
+    cert-manager.io/inject-ca-from: registry-proxy/registry-proxy-cert
 webhooks:
 - admissionReviewVersions:
   - v1
@@ -103,6 +135,15 @@ webhooks:
   failurePolicy: Fail
   matchPolicy: Exact
   name: registry-proxy.registry-proxy.svc
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: NotIn
+      values:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+      - registry-proxy
   rules:
   - apiGroups:
     - ""

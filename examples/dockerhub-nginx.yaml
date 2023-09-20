@@ -1,26 +1,11 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
   name: dockerhub-nginx
   namespace: default
   labels:
     app: dockerhub-nginx
-  annotations:
-    registry-proxy/enabled: "true"
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: dockerhub-nginx
-  template:
-    metadata:
-      labels:
-        app: dockerhub-nginx
-      annotations:
-        registry-proxy/enabled: "true"
-    spec:
-      containers:
-        - name: dockerhub-nginx
-          image: nginx
-          ports:
-            - containerPort: 80
+  containers:
+    - name: dockerhub-nginx
+      image: nginx

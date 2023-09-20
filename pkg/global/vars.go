@@ -14,23 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package image
+package global
 
-import (
-	"fmt"
-	"github.com/containers/image/docker/reference"
-	"strings"
-)
-
-// Parse 获取镜像的 registry（domain） 和 name（这里的 name 不包含 domain）
-func Parse(image string) (registry, name string, err error) {
-	named, err := reference.ParseDockerRef(image)
-	if err != nil {
-		fmt.Println("parse image failed.", err.Error(), image)
-		return
+var (
+	SupportedRegistries = map[string]string{
+		"docker.io":         "dockerproxy.com",
+		"ghcr.io":           "ghcr.dockerproxy.com",
+		"gcr.io":            "gcr.dockerproxy.com",
+		"k8s.gcr.io":        "k8s.dockerproxy.com",
+		"registry.k8s.io":   "k8s.dockerproxy.com",
+		"quay.io":           "quay.dockerproxy.com",
+		"mcr.microsoft.com": "mcr.dockerproxy.com",
 	}
-
-	registry = reference.Domain(named)
-	name = strings.TrimPrefix(reference.TagNameOnly(named).String(), registry+"/")
-	return
-}
+)

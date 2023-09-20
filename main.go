@@ -19,11 +19,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fatih/color"
+	"github.com/ketches/registry-proxy/pkg/conf"
+	"github.com/ketches/registry-proxy/pkg/global"
 	"github.com/ketches/registry-proxy/pkg/image"
 	v1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
+	"k8s.io/utils/strings/slices"
 	"log"
 	"net/http"
 	"os"
@@ -33,26 +36,24 @@ import (
 const (
 	certFile = "/etc/webhook/certs/tls.crt"
 	keyFile  = "/etc/webhook/certs/tls.key"
-
-	matchAnnotationKey = "registry-proxy/enabled"
 )
 
 func init() {
-	_, err := os.Stat(certFile)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	_, err = os.Stat(keyFile)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
+	fmt.Println(color.GreenString("Welcome to use registry-proxy!"))
+	conf.HotLoading()
 }
 
 func main() {
 	http.HandleFunc("/mutate", mutatePod)
-	klog.Info("start serving registry-proxy admission webhook ...")
-	if err := http.ListenAndServeTLS(":443", certFile, keyFile, nil); err != nil {
-		log.Fatalln("failed to listen and serve admission webhook.", err.Error())
+	log.Println("Start serving registry-proxy admission webhook ...")
+	if os.Getenv("LOCAL_DEBUG") == "true" {
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			log.Fatalln("failed to listen and serve admission webhook.", err.Error())
+		}
+	} else {
+		if err := http.ListenAndServeTLS(":443", certFile, keyFile, nil); err != nil {
+			log.Fatalln("failed to listen and serve admission webhook.", err.Error())
+		}
 	}
 }
 
@@ -82,17 +83,16 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
 		UID:     reviewRequest.Request.UID,
 		Allowed: true,
 		Result:  nil,
-		PatchType: func() *v1.PatchType {
-			pt := v1.PatchTypeJSONPatch
-			return &pt
-		}(),
 	}
 
-	if pod.Annotations[matchAnnotationKey] == "true" {
-		fmt.Printf("pod %s/%s is matched\n", pod.Namespace, pod.Name)
-		reviewResponse.Response.Result = &metav1.Status{
-			Message: fmt.Sprintf("pod %s/%s is matched", pod.Namespace, pod.Name),
-		}
+	podName := pod.Name
+	if podName == "" {
+		// pod is controlled by a controller, use generateName instead
+		podName = pod.GenerateName
+	}
+
+	if isPodIncluded(pod) {
+		log.Printf("pod %s/%s is included", pod.Namespace, podName)
 
 		replaceImage(pod)
 
@@ -117,6 +117,15 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
 		}
 
 		reviewResponse.Response.Patch = patchBytes
+		reviewResponse.Response.PatchType = func() *v1.PatchType {
+			pt := v1.PatchTypeJSONPatch
+			return &pt
+		}()
+		reviewResponse.Response.Result = &metav1.Status{
+			Message: fmt.Sprintf("registries in pod %s/%s is proxied", pod.Namespace, podName),
+		}
+	} else {
+		log.Printf("pod %s/%s is excluded", pod.Namespace, podName)
 	}
 
 	if err := json.NewEncoder(w).Encode(reviewResponse); err != nil {
@@ -141,17 +150,25 @@ func replaceImage(pod *corev1.Pod) {
 }
 
 func getProxyImage(rawImage string) string {
+	var result = rawImage
 	registry, name, err := image.Parse(rawImage)
 	if err != nil {
 		log.Println("parse image failed.")
-		return rawImage
+		return result
 	}
 
-	return path.Join(getProxyRegistry(registry), name)
+	includeRegistries := conf.GetIncludeRegistries()
+	if slices.Contains(includeRegistries, "*") || slices.Contains(includeRegistries, registry) {
+		result = path.Join(getProxyRegistry(registry), name)
+	}
+	if result != rawImage {
+		log.Println(color.CyanString("proxy image: " + color.YellowString(rawImage) + " -> " + color.HiGreenString(result)))
+	}
+	return result
 }
 
 func getProxyRegistry(rawRegistry string) string {
-	newRegistry := registries[rawRegistry]
+	newRegistry := global.SupportedRegistries[rawRegistry]
 	if newRegistry == "" {
 		return rawRegistry
 	}
@@ -159,12 +176,12 @@ func getProxyRegistry(rawRegistry string) string {
 	return newRegistry
 }
 
-var registries = map[string]string{
-	"docker.io":         "dockerproxy.com",
-	"ghcr.io":           "ghcr.dockerproxy.com",
-	"gcr.io":            "gcr.dockerproxy.com",
-	"k8s.gcr.io":        "k8s.dockerproxy.com",
-	"registry.k8s.io":   "k8s.dockerproxy.com",
-	"quay.io":           "quay.dockerproxy.com",
-	"mcr.microsoft.com": "mcr.dockerproxy.com",
+func isPodIncluded(pod *corev1.Pod) bool {
+	excludeNamespaces := conf.GetExcludeNamespaces()
+	if slices.Contains(excludeNamespaces, "*") || slices.Contains(excludeNamespaces, pod.Namespace) {
+		return false
+	}
+
+	includeNamespaces := conf.GetIncludeNamespaces()
+	return slices.Contains(includeNamespaces, "*") || slices.Contains(includeNamespaces, pod.Namespace)
 }

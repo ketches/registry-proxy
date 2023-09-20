@@ -16,7 +16,9 @@ limitations under the License.
 
 package image
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestParseImage(t *testing.T) {
 	testdata := []struct {
@@ -25,34 +27,49 @@ func TestParseImage(t *testing.T) {
 		name   string
 	}{
 		{
-			image:  "stilleshan/frpc:latest",
+			image:  "username/image:tag",
 			domain: "docker.io",
-			name:   "docker.io/stilleshan/frpc:latest",
-		},
-		{
-			image:  "nginx:latest",
+			name:   "username/image:tag",
+		}, {
+			image:  "image:tag",
 			domain: "docker.io",
-			name:   "docker.io/library/nginx:latest",
-		},
-		{
-			image:  "ghcr.io/nginxinc/nginx-kubernetes-gateway:edge",
+			name:   "library/image:tag",
+		}, {
+			image:  "gcr.io/username/image:tag",
+			domain: "gcr.io",
+			name:   "username/image:tag",
+		}, {
+			image:  "ghcr.io/username/image:tag",
 			domain: "ghcr.io",
-			name:   "ghcr.io/nginxinc/nginx-kubernetes-gateway:edge",
-		},
-		{
-			image:  "ghcr.io/nginxinc/nginx-kubernetes-gateway/nginx:edge",
+			name:   "username/image:tag",
+		}, {
+			image:  "ghcr.io/username/namespace/image:tag",
 			domain: "ghcr.io",
-			name:   "ghcr.io/nginxinc/nginx-kubernetes-gateway/nginx:edge",
-		},
-		{
-			image:  "registry.k8s.io/kube-apiserver:v1.28.0",
+			name:   "username/namespace/image:tag",
+		}, {
+			image:  "k8s.gcr.io/image:tag",
+			domain: "k8s.gcr.io",
+			name:   "image:tag",
+		}, {
+			image:  "k8s.gcr.io/username/image:tag",
+			domain: "k8s.gcr.io",
+			name:   "username/image:tag",
+		}, {
+			image:  "registry.k8s.io/image:tag",
 			domain: "registry.k8s.io",
-			name:   "registry.k8s.io/kube-apiserver:v1.28.0",
-		},
-		{
-			image:  "registry.k8s.io/gateway-api/admission-server:v0.8.0",
+			name:   "image:tag",
+		}, {
+			image:  "registry.k8s.io/username/image:tag",
 			domain: "registry.k8s.io",
-			name:   "registry.k8s.io/gateway-api/admission-server:v0.8.0",
+			name:   "username/image:tag",
+		}, {
+			image:  "quay.io/username/image:tag",
+			domain: "quay.io",
+			name:   "username/image:tag",
+		}, {
+			image:  "mcr.microsoft.com/namespace/image:tag",
+			domain: "mcr.microsoft.com",
+			name:   "namespace/image:tag",
 		},
 	}
 
@@ -62,10 +79,10 @@ func TestParseImage(t *testing.T) {
 			t.Errorf("parse image failed: %v", err)
 		}
 		if domain != td.domain {
-			t.Errorf("parse image failed, expected domain: %s, got: %s", td.domain, domain)
+			t.Errorf("parse image %s failed, expected domain: %s, got: %s", td.image, td.domain, domain)
 		}
 		if named != td.name {
-			t.Errorf("parse image failed, expected named: %s, got: %s", td.name, named)
+			t.Errorf("parse image %s failed, expected named: %s, got: %s", td.image, td.name, named)
 		}
 	}
 }
