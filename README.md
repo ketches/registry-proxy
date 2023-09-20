@@ -24,46 +24,6 @@ PS：感谢 [Docker Proxy](https://dockerproxy.com/) 提供的镜像代理服务
 
 ![202309201040207](https://pding.oss-cn-hangzhou.aliyuncs.com/images/202309201040207.png)
 
-## 代理参考
-
-### ****Docker Hub 官方镜像代理****
-
-- 常规镜像代理
-    - stilleshan/frpc:latest => dockerproxy.com/stilleshan/frpc:latest
-
-- 根镜像代理
-    - nginx:latest => dockerproxy.com/library/nginx:latest
-
-### GitHub Container Registry
-
-- 常规镜像代理
-    - ghcr.io/username/image:tag => ghcr.dockerproxy.com/username/image:tag
-
-### Google Container Registry
-
-- 常规镜像代理
-    - gcr.io/username/image:tag => gcr.dockerproxy.com/username/image:tag
-
-### Google Kubernetes
-
-- 常规镜像代理
-    - k8s.gcr.io/username/image:tag => k8s.dockerproxy.com/username/image:tag
-    - registry.k8s.io/username/image:tag => k8s.dockerproxy.com/username/image:tag
-
-- 根镜像代理
-    - k8s.gcr.io/coredns:1.6.5 => k8s.dockerproxy.com/coredns:1.6.5
-    - registry.k8s.io/coredns:1.6.5 => k8s.dockerproxy.com/coredns:1.6.5
-
-### Quay.io
-
-- 常规镜像代理
-    - quay.io/username/image:tag => quay.dockerproxy.com/username/image:tag
-
-### Microsoft Artifact Registry
-
-- 常规镜像代理
-    - mcr.microsoft.com/azure-cognitive-services/diagnostic:latest => mcr.dockerproxy.com/azure-cognitive-services/diagnostic:latest
-
 ## 快速安装
 
 **安装 cert-manager**
@@ -134,6 +94,14 @@ kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master
 kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
 ```
 
+示例中的 Pod 镜像为 `nginx:latest`，经过 registry-proxy 处理后，容器镜像变为 `dockerproxy.com/library/nginx:latest`。
+
+验证：
+
+```bash
+kubectl get pod dockerhub-nginx -o=jsonpath='{.spec.containers[*].image}'
+```
+
 ## 卸载&清理
 
 **卸载 registry-proxy**
@@ -153,3 +121,43 @@ kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/maste
 # 代理地址
 kubectl delete -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
 ```
+
+## 代理参考
+
+### Docker Hub 官方镜像代理
+
+- 常规镜像代理
+  - stilleshan/frpc:latest => dockerproxy.com/stilleshan/frpc:latest
+
+- 根镜像代理
+  - nginx:latest => dockerproxy.com/library/nginx:latest
+
+### GitHub Container Registry
+
+- 常规镜像代理
+  - ghcr.io/username/image:tag => ghcr.dockerproxy.com/username/image:tag
+
+### Google Container Registry
+
+- 常规镜像代理
+  - gcr.io/username/image:tag => gcr.dockerproxy.com/username/image:tag
+
+### Google Kubernetes
+
+- 常规镜像代理
+  - k8s.gcr.io/username/image:tag => k8s.dockerproxy.com/username/image:tag
+  - registry.k8s.io/username/image:tag => k8s.dockerproxy.com/username/image:tag
+
+- 根镜像代理
+  - k8s.gcr.io/coredns:1.6.5 => k8s.dockerproxy.com/coredns:1.6.5
+  - registry.k8s.io/coredns:1.6.5 => k8s.dockerproxy.com/coredns:1.6.5
+
+### Quay.io
+
+- 常规镜像代理
+  - quay.io/username/image:tag => quay.dockerproxy.com/username/image:tag
+
+### Microsoft Artifact Registry
+
+- 常规镜像代理
+  - mcr.microsoft.com/azure-cognitive-services/diagnostic:latest => mcr.dockerproxy.com/azure-cognitive-services/diagnostic:latest
