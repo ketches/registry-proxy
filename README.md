@@ -76,6 +76,7 @@ data:
     - kube-public
     - kube-node-lease
     includeNamespaces:
+    - default
     - dev
     - staging
     includeRegistries:
