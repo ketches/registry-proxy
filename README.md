@@ -18,9 +18,9 @@ PS：感谢 [Docker Proxy](https://dockerproxy.com/) 提供的镜像代理服务
 
 使用 Mutating Webhook 准入控制器实现。 当集群中 Pod 创建时，Mutating Webhook 的工作流程如下：
 
-1、判断 Pod 是否属于排除的命名空间，如果是，结束流程；
-2、判断 Pod 是否属于包含的命名空间，如果不是，结束流程；
-3、依次判断 Pod 中的容器镜像是否属于包含的镜像仓库，如果是，替换为 Docker Proxy 代理镜像；
+1. 判断 Pod 是否属于排除的命名空间，如果是，结束流程；
+2. 判断 Pod 是否属于包含的命名空间，如果不是，结束流程；
+3. 依次判断 Pod 中的容器镜像是否属于包含的镜像仓库，如果是，替换为 Docker Proxy 代理镜像；
 
 ![202309201040207](https://pding.oss-cn-hangzhou.aliyuncs.com/images/202309201040207.png)
 
