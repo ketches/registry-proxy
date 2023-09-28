@@ -18,6 +18,8 @@ package conf
 
 import (
 	"context"
+	"log"
+
 	"github.com/ketches/registry-proxy/pkg/global"
 	"github.com/ketches/registry-proxy/pkg/kube"
 	"golang.org/x/exp/maps"
@@ -28,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	informerscorev1 "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/tools/cache"
-	"log"
 )
 
 func HotLoading() {

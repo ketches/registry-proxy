@@ -19,6 +19,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"path"
+	"slices"
+
 	"github.com/fatih/color"
 	"github.com/ketches/registry-proxy/pkg/conf"
 	"github.com/ketches/registry-proxy/pkg/global"
@@ -26,11 +32,6 @@ import (
 	v1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/strings/slices"
-	"log"
-	"net/http"
-	"os"
-	"path"
 )
 
 const (
@@ -136,15 +137,15 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
 }
 
 func replaceImage(pod *corev1.Pod) {
-	for i, _ := range pod.Spec.InitContainers {
+	for i := range pod.Spec.InitContainers {
 		pod.Spec.InitContainers[i].Image = getProxyImage(pod.Spec.InitContainers[i].Image)
 	}
 
-	for i, _ := range pod.Spec.Containers {
+	for i := range pod.Spec.Containers {
 		pod.Spec.Containers[i].Image = getProxyImage(pod.Spec.Containers[i].Image)
 	}
 
-	for i, _ := range pod.Spec.EphemeralContainers {
+	for i := range pod.Spec.EphemeralContainers {
 		pod.Spec.EphemeralContainers[i].EphemeralContainerCommon.Image = getProxyImage(pod.Spec.EphemeralContainers[i].EphemeralContainerCommon.Image)
 	}
 }
