@@ -166,7 +166,7 @@ func getProxyImage(rawImage string) string {
 
 func getProxyRegistry(rawRegistry string) string {
 	proxies := conf.GetProxies()
-	if proxies != nil {
+	if proxies == nil {
 		return rawRegistry
 	}
 	newRegistry := proxies[rawRegistry]
