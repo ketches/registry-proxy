@@ -1,11 +1,10 @@
 module github.com/ketches/registry-proxy
 
-go 1.21.0
+go 1.21.3
 
 require (
 	github.com/containers/image v3.0.2+incompatible
 	github.com/fatih/color v1.13.0
-	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.28.2
 	k8s.io/apimachinery v0.28.2
@@ -49,6 +48,7 @@ require (
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.8.3 // indirect
+	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/net v0.13.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
