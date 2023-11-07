@@ -56,7 +56,7 @@ metadata:
   name: registry-proxy-config
   namespace: registry-proxy
 data:
-  config.yaml: |-
+  config.yaml: |
     proxies:
       docker.io: docker.ketches.cn
       registry.k8s.io: k8s.ketches.cn
