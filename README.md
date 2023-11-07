@@ -1,11 +1,11 @@
 # registry-proxy
 
-在 Kubernetes 集群中部署 Registry Proxy，自动帮助您使用镜像代理服务拉取外网容器镜像（仅限公有镜像）。
+在 Kubernetes 集群中部署 Registry Proxy，自动帮助您使用镜像代理服务拉取新创建的 Pod 中的外网容器镜像（仅限公有镜像）。
 
 **适用场景**
 
 1. 无法拉取例如 K8s (registry.k8s.io) 、谷歌 (gcr.io) 等镜像；
-2. 拉取 DockerHub、quay.io 等镜像速度过慢。
+2. 龟速拉取例如 GitHub(ghcr.io)、RedHat(quay.io) 等镜像；
 
 **代理清单**
 
@@ -19,39 +19,30 @@
 - k8s.gcr.io
 - docker.cloudsmith.io
 
-> Notes：
-> 
-> 默认使用 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 镜像代理服务，当然您也可以通过修改 ConfigMap proxies 配置，来自定义代理服务，或者追加以上默认代理清单中还不支持的代理服务，例如：
-> - docker.io: docker.m.daocloud.io；
-> - mcr.microsoft.com: mcr.dockerproxy.com；
-> 
-> 你还可以通过向 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 项目 [提交 Issue](https://github.com/ketches/cloudflare-registry-proxy/issues/new) 来申请添加新的代理服务。
-
 ## 快速安装
 
-**安装 cert-manager**
+1. **安装 cert-manager**
 
-*如果集群中已经安装了 cert-manager，可以跳过这一步。*
+   如果集群中已经安装了 *cert-manager*，可以跳过这一步。这里提供快速安装的方式：
 
-这里提供快速安装的方式：
+   ```bash
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+   
+   # 代理地址
+   kubectl apply -f https://ghproxy.com/https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+   ```
 
-```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+   > 官方文档： [Install cert-manager](https://cert-manager.io/docs/installation/)。
 
-# 代理地址
-kubectl apply -f https://ghproxy.com/https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
-```
+2. **安装 registry-proxy**
 
-> 官方文档： [Install cert-manager](https://cert-manager.io/docs/installation/)。
+   ```bash
+   kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
+   
+   # 代理地址
+   kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
+   ```
 
-**安装 registry-proxy**
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
-
-# 代理地址
-kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
-```
 ## 配置
 
 registry-proxy 安装后自动创建 ConfigMap `registry-proxy-config`，ConfigMap 内容为默认配置，可以通过修改 ConfigMap 来修改默认配置。
@@ -79,14 +70,17 @@ data:
     - kube-public
     - kube-node-lease
     includeNamespaces:
-    - default
-    - dev
-    - staging
+    - *
 ```
 
 > Notes：
-> 1. 修改上述配置实时生效，无需重启 registry-proxy；
-> 2. 可以自定义代理地址，例如：`docker.io: dockerproxy.com`，这样就可以使用 `dockerproxy.com/library/nginx:latest` 拉取 `nginx:latest` 镜像。
+> 1. 默认使用 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 镜像代理服务；
+> 2. 默认排除 `kube-system`、`kube-public`、`kube-node-lease` 命名空间下的 Pod 容器镜像代理；
+> 3. 修改上述配置实时生效，无需重启 registry-proxy；
+> 4. 可以自定义代理地址，例如：`docker.io: docker.m.daocloud.io`;
+> 5. 可以去除代理地址，免去代理；
+> 6. 可以增加代理地址，例如：`mcr.microsoft.com: mcr.dockerproxy.com`；
+> 7. 可以通过向 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 项目 [提交 Issue](https://github.com/ketches/cloudflare-registry-proxy/issues/new) 来申请添加新的国外镜像代理服务
 
 ## 实现原理
 
