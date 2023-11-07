@@ -10,4 +10,8 @@ build:
 
 .PHONY: deploy
 deploy:
-	kubectl apply -f deploy/manifets.yaml
+	kubectl apply -f deploy/manifests.yaml
+
+.PHONY: undeploy
+undeploy:
+	kubectl delete -f deploy/manifests.yaml
