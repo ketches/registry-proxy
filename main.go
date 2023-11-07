@@ -27,7 +27,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/ketches/registry-proxy/pkg/conf"
-	"github.com/ketches/registry-proxy/pkg/global"
 	"github.com/ketches/registry-proxy/pkg/image"
 	v1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -158,10 +157,7 @@ func getProxyImage(rawImage string) string {
 		return result
 	}
 
-	includeRegistries := conf.GetIncludeRegistries()
-	if slices.Contains(includeRegistries, "*") || slices.Contains(includeRegistries, registry) {
-		result = path.Join(getProxyRegistry(registry), name)
-	}
+	result = path.Join(getProxyRegistry(registry), name)
 	if result != rawImage {
 		log.Println(color.CyanString("proxy image: " + color.YellowString(rawImage) + " -> " + color.HiGreenString(result)))
 	}
@@ -169,11 +165,14 @@ func getProxyImage(rawImage string) string {
 }
 
 func getProxyRegistry(rawRegistry string) string {
-	newRegistry := global.SupportedRegistries[rawRegistry]
+	proxies := conf.GetProxies()
+	if proxies != nil {
+		return rawRegistry
+	}
+	newRegistry := proxies[rawRegistry]
 	if newRegistry == "" {
 		return rawRegistry
 	}
-
 	return newRegistry
 }
 

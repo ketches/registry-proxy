@@ -18,7 +18,6 @@ package kube
 
 import (
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -31,8 +30,4 @@ func Client() kubernetes.Interface {
 		client = kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
 	}
 	return client
-}
-
-func ClientFromConfig(config *rest.Config) (kubernetes.Interface, error) {
-	return kubernetes.NewForConfig(config)
 }

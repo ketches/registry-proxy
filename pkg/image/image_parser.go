@@ -22,7 +22,7 @@ import (
 	"strings"
 )
 
-// Parse 获取镜像的 registry（domain） 和 name（这里的 name 不包含 domain）
+// Parse parses the image name and returns the registry and name(name is not contains registry domain).
 func Parse(image string) (registry, name string, err error) {
 	named, err := reference.ParseDockerRef(image)
 	if err != nil {

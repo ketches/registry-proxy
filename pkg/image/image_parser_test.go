@@ -66,10 +66,6 @@ func TestParseImage(t *testing.T) {
 			image:  "quay.io/username/image:tag",
 			domain: "quay.io",
 			name:   "username/image:tag",
-		}, {
-			image:  "mcr.microsoft.com/namespace/image:tag",
-			domain: "mcr.microsoft.com",
-			name:   "namespace/image:tag",
 		},
 	}
 

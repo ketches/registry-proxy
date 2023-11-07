@@ -1,28 +1,31 @@
 # registry-proxy
 
-Registry Proxy，帮助您在 Kubernetes 集群中愉快地拉取国外容器镜像（仅限公有镜像）。
+在 Kubernetes 集群中部署 Registry Proxy，自动帮助您使用镜像代理服务拉取外网容器镜像（仅限公有镜像）。
 
-目前支持的境外镜像仓库：
+**适用场景**
+
+1. 无法拉取例如 K8s (registry.k8s.io) 、谷歌 (gcr.io) 等镜像；
+2. 拉取 DockerHub、quay.io 等镜像速度过慢。
+
+**代理清单**
+
+默认镜像代理服务支持的外网镜像仓库：
 
 - docker.io
+- registry.k8s.io
+- quay.io
 - ghcr.io
 - gcr.io
 - k8s.gcr.io
-- registry.k8s.io
-- quay.io
-- mcr.microsoft.com
+- docker.cloudsmith.io
 
-PS：感谢 [Docker Proxy](https://dockerproxy.com/) 提供的镜像代理服务，本项目才能得以实现。💕
-
-## 实现原理
-
-使用 Mutating Webhook 准入控制器实现。 当集群中 Pod 创建时，Mutating Webhook 的工作流程如下：
-
-1. 判断 Pod 是否属于排除的命名空间，如果是，结束流程；
-2. 判断 Pod 是否属于包含的命名空间，如果不是，结束流程；
-3. 依次判断 Pod 中的容器镜像是否属于包含的镜像仓库，如果是，替换为 Docker Proxy 代理镜像；
-
-![202309201040207](https://pding.oss-cn-hangzhou.aliyuncs.com/images/202309201040207.png)
+> Notes：
+> 
+> 默认使用 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 镜像代理服务，当然您也可以通过修改 ConfigMap proxies 配置，来自定义代理服务，或者追加以上默认代理清单中还不支持的代理服务，例如：
+> - docker.io: docker.m.daocloud.io；
+> - mcr.microsoft.com: mcr.dockerproxy.com；
+> 
+> 你还可以通过向 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 项目 [提交 Issue](https://github.com/ketches/cloudflare-registry-proxy/issues/new) 来申请添加新的代理服务。
 
 ## 快速安装
 
@@ -33,10 +36,10 @@ PS：感谢 [Docker Proxy](https://dockerproxy.com/) 提供的镜像代理服务
 这里提供快速安装的方式：
 
 ```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
 
 # 代理地址
-kubectl apply -f https://ghproxy.com/https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+kubectl apply -f https://ghproxy.com/https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
 ```
 
 > 官方文档： [Install cert-manager](https://cert-manager.io/docs/installation/)。
@@ -49,28 +52,28 @@ kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master
 # 代理地址
 kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
 ```
+## 配置
 
-**配置**
+registry-proxy 安装后自动创建 ConfigMap `registry-proxy-config`，ConfigMap 内容为默认配置，可以通过修改 ConfigMap 来修改默认配置。
 
-三个配置参数，以下给出默认配置，只有在命名空间范围内的 Pod，且 Pod 镜像在 Registry 范围内，容器镜像才会修改为 Docker Proxy 代理镜像。
+默认配置：
 
-1. excludeNamespaces：["kube-system", "kube-public", "kube-node-lease"]
-2. includeNamespaces: ["*"]
-3. includeRegistries: ["docker.io", "ghcr.io", "gcr.io", "k8s.gcr.io", "registry.k8s.io", "quay.io", "mcr.microsoft.com"]
-
-通过 ConfigMap 修改默认配置，修改会实时生效。
-
-示例：限定代理命名空间 default、dev 和 staging 中 docker.io 的镜像。
-
-```bash
-kubectl apply -f - <<EOF
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: registry-proxy-config
   namespace: registry-proxy
 data:
-  config.yaml: |
+  config.yaml: |-
+    proxies:
+      docker.io: docker.ketches.cn
+      registry.k8s.io: k8s.ketches.cn
+      quay.io: quay.ketches.cn
+      ghcr.io: ghcr.ketches.cn
+      gcr.io: gcr.ketches.cn
+      k8s.gcr.io: k8s-gcr.ketches.cn
+      docker.cloudsmith.io: cloudsmith.ketches.cn
     excludeNamespaces:
     - kube-system
     - kube-public
@@ -79,14 +82,25 @@ data:
     - default
     - dev
     - staging
-    includeRegistries:
-    - "docker.io"
-EOF
 ```
 
-## 使用方式
+> Notes：
+> 1. 修改上述配置实时生效，无需重启 registry-proxy；
+> 2. 可以自定义代理地址，例如：`docker.io: dockerproxy.com`，这样就可以使用 `dockerproxy.com/library/nginx:latest` 拉取 `nginx:latest` 镜像。
 
-## 示例
+## 实现原理
+
+使用 Mutating Webhook 准入控制器实现。 当集群中 Pod 创建时，Mutating Webhook 的工作流程如下：
+
+1. 判断 Pod 是否属于排除的命名空间，如果是，结束流程；
+2. 判断 Pod 是否属于包含的命名空间，如果不是，结束流程；
+3. 依次判断 Pod 中的容器镜像是否匹配代理仓库，如果是，替换为代理镜像；
+
+![202311071243391](https://pding.oss-cn-hangzhou.aliyuncs.com/images/202311071243391.png)
+
+## 使用示例
+
+使用 Docker 镜像 nginx 创建一个 Pod：
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
@@ -95,7 +109,7 @@ kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master
 kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
 ```
 
-示例中的 Pod 镜像为 `nginx:latest`，经过 registry-proxy 处理后，容器镜像变为 `dockerproxy.com/library/nginx:latest`。
+示例中的 Pod 镜像为 `nginx:latest`，经过 registry-proxy 自动代理后，容器镜像变为 `docker.ketches.cn/library/nginx:latest`。
 
 验证：
 
@@ -125,40 +139,18 @@ kubectl delete -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/
 
 ## 代理参考
 
-### Docker Hub 官方镜像代理
+### Docker Hub 镜像代理
 
-- 常规镜像代理
-  - stilleshan/frpc:latest => dockerproxy.com/stilleshan/frpc:latest
+常规镜像代理
+- ketches/registry-proxy:latest => docker.ketches.cn/ketches/registry-proxy:latest
 
-- 根镜像代理
-  - nginx:latest => dockerproxy.com/library/nginx:latest
+根镜像代理
+- nginx:latest => docker.ketches.cn/library/nginx:latest
 
-### GitHub Container Registry
+### Kubernetes 镜像代理
 
-- 常规镜像代理
-  - ghcr.io/username/image:tag => ghcr.dockerproxy.com/username/image:tag
+常规镜像代理
+- registry.k8s.io/ingress-nginx/controller:v1.8.2 => k8s.ketches.cn/ingress-nginx/controller:v1.8.2
 
-### Google Container Registry
-
-- 常规镜像代理
-  - gcr.io/username/image:tag => gcr.dockerproxy.com/username/image:tag
-
-### Google Kubernetes
-
-- 常规镜像代理
-  - k8s.gcr.io/username/image:tag => k8s.dockerproxy.com/username/image:tag
-  - registry.k8s.io/username/image:tag => k8s.dockerproxy.com/username/image:tag
-
-- 根镜像代理
-  - k8s.gcr.io/coredns:1.6.5 => k8s.dockerproxy.com/coredns:1.6.5
-  - registry.k8s.io/coredns:1.6.5 => k8s.dockerproxy.com/coredns:1.6.5
-
-### Quay.io
-
-- 常规镜像代理
-  - quay.io/username/image:tag => quay.dockerproxy.com/username/image:tag
-
-### Microsoft Artifact Registry
-
-- 常规镜像代理
-  - mcr.microsoft.com/azure-cognitive-services/diagnostic:latest => mcr.dockerproxy.com/azure-cognitive-services/diagnostic:latest
+根镜像代理
+- registry.k8s.io/pause:3.9 => k8s.ketches.cn/pause:3.9

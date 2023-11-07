@@ -7,3 +7,7 @@ build:
 	- docker buildx use gobuilder
 	- docker buildx create --use --name gobuilder
 	docker buildx build --platform linux/amd64,linux/arm64 -t $(IMG) --push .
+
+.PHONY: deploy
+deploy:
+	kubectl apply -f deploy/manifets.yaml

@@ -22,7 +22,6 @@ import (
 
 	"github.com/ketches/registry-proxy/pkg/global"
 	"github.com/ketches/registry-proxy/pkg/kube"
-	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -95,12 +94,23 @@ func HotLoading() {
 }
 
 type configModel struct {
-	ExcludeNamespaces []string `yaml:"excludeNamespaces"`
-	IncludeNamespaces []string `yaml:"includeNamespaces"`
-	IncludeRegistries []string `yaml:"includeRegistries"`
+	Proxies           map[string]string `yaml:"proxies"`
+	ExcludeNamespaces []string          `yaml:"excludeNamespaces"`
+	IncludeNamespaces []string          `yaml:"includeNamespaces"`
+}
+
+var defaultProxies = map[string]string{
+	"docker.io":            "docker.ketches.cn",
+	"registry.k8s.io":      "k8s.ketches.cn",
+	"quay.io":              "quay.ketches.cn",
+	"ghcr.io":              "ghcr.ketches.cn",
+	"gcr.io":               "gcr.ketches.cn",
+	"k8s.gcr.io":           "k8s-gcr.ketches.cn",
+	"docker.cloudsmith.io": "cloudsmith.ketches.cn",
 }
 
 var defaultConfig = configModel{
+	Proxies: defaultProxies,
 	ExcludeNamespaces: []string{
 		"kube-system",
 		"kube-public",
@@ -109,7 +119,6 @@ var defaultConfig = configModel{
 	IncludeNamespaces: []string{
 		"*",
 	},
-	IncludeRegistries: maps.Keys(global.SupportedRegistries),
 }
 
 var config = defaultConfig
@@ -123,16 +132,16 @@ func printCurrentConfig(c configModel) {
 	log.Printf("Current registry proxy config: \n%s", string(out))
 }
 
+func GetProxies() map[string]string {
+	return config.Proxies
+}
+
 func GetExcludeNamespaces() []string {
 	return config.ExcludeNamespaces
 }
 
 func GetIncludeNamespaces() []string {
 	return config.IncludeNamespaces
-}
-
-func GetIncludeRegistries() []string {
-	return config.IncludeRegistries
 }
 
 func tryResetConfigFromConfigMap(cm *corev1.ConfigMap) {
