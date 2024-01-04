@@ -2,12 +2,12 @@
 
 在 Kubernetes 集群中部署 Registry Proxy，自动帮助您使用镜像代理服务拉取新创建的 Pod 中的外网容器镜像（仅限公有镜像）。
 
-**适用场景**
+**适用场景**：
 
 1. 无法拉取例如 K8s (registry.k8s.io) 、谷歌 (gcr.io) 等镜像；
 2. 龟速拉取例如 GitHub(ghcr.io)、RedHat(quay.io) 等镜像；
 
-**代理清单**
+**代理清单**：
 
 默认镜像代理服务支持的外网镜像仓库：
 
@@ -29,7 +29,7 @@
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
    
    # 代理地址
-   kubectl apply -f https://ghproxy.com/https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
+   kubectl apply -f https://ghproxy.ketches.cn/https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
    ```
 
    > 官方文档： [Install cert-manager](https://cert-manager.io/docs/installation/)。
@@ -42,7 +42,7 @@
    kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
    
    # 代理地址
-   kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
+   kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
    ```
 
 ## 配置
@@ -76,6 +76,7 @@ data:
 ```
 
 > Notes：
+>
 > 1. 默认使用 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 镜像代理服务；
 > 2. 默认排除 `kube-system`、`kube-public`、`kube-node-lease` 命名空间下的 Pod 容器镜像代理；
 > 3. 修改上述配置实时生效，无需重启 registry-proxy；
@@ -102,7 +103,7 @@ data:
 kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
 
 # 代理地址
-kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
+kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
 ```
 
 示例中的 Pod 镜像为 `nginx:latest`，经过 registry-proxy 自动代理后，容器镜像变为 `docker.ketches.cn/library/nginx:latest`。
@@ -115,23 +116,23 @@ kubectl get pod dockerhub-nginx -o=jsonpath='{.spec.containers[*].image}'
 
 ## 卸载&清理
 
-**卸载 registry-proxy**
+**卸载 registry-proxy**：
 
 ```bash
 export LATEST=$(basename $(curl -s -w %{redirect_url} https://github.com/ketches/registry-proxy/releases/latest))
 kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
 
 # 代理地址
-kubectl delete -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
+kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
 ```
 
-**清理示例**
+**清理示例**：
 
 ```bash
 kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
 
 # 代理地址
-kubectl delete -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
+kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
 ```
 
 ## 代理参考
@@ -139,15 +140,19 @@ kubectl delete -f https://ghproxy.com/https://raw.githubusercontent.com/ketches/
 ### Docker Hub 镜像代理
 
 常规镜像代理
+
 - ketches/registry-proxy:latest => docker.ketches.cn/ketches/registry-proxy:latest
 
 根镜像代理
+
 - nginx:latest => docker.ketches.cn/library/nginx:latest
 
 ### Kubernetes 镜像代理
 
 常规镜像代理
+
 - registry.k8s.io/ingress-nginx/controller:v1.8.2 => k8s.ketches.cn/ingress-nginx/controller:v1.8.2
 
 根镜像代理
+
 - registry.k8s.io/pause:3.9 => k8s.ketches.cn/pause:3.9
