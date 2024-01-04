@@ -93,7 +93,7 @@ data:
 2. 判断 Pod 是否属于包含的命名空间，如果不是，结束流程；
 3. 依次判断 Pod 中的容器镜像是否匹配代理仓库，如果是，替换为代理镜像；
 
-![202311071243391](https://pding.oss-cn-hangzhou.aliyuncs.com/images/202311071243391.png)
+![202311071243391](https://fs.poneding.com/images/202311071243391.png)
 
 ## 使用示例
 
