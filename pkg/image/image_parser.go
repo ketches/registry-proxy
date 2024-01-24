@@ -17,16 +17,17 @@ limitations under the License.
 package image
 
 import (
-	"fmt"
-	"github.com/containers/image/docker/reference"
+	"log"
 	"strings"
+
+	"github.com/containers/image/docker/reference"
 )
 
 // Parse parses the image name and returns the registry and name(name is not contains registry domain).
 func Parse(image string) (registry, name string, err error) {
 	named, err := reference.ParseDockerRef(image)
 	if err != nil {
-		fmt.Println("parse image failed.", err.Error(), image)
+		log.Println("Parse image failed.", err.Error(), image)
 		return
 	}
 

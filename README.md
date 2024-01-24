@@ -1,3 +1,6 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/ketches/registry-proxy)](https://goreportcard.com/report/github.com/ketches/registry-proxy)
+[![Go Doc](https://pkg.go.dev/badge/github.com/ketches/registry-proxy)](https://pkg.go.dev/github.com/ketches/registry-proxy)
+
 # registry-proxy
 
 在 Kubernetes 集群中部署 Registry Proxy，自动帮助您使用镜像代理服务拉取新创建的 Pod 中的外网容器镜像（仅限公有镜像）。
@@ -21,29 +24,16 @@
 
 ## 快速安装
 
-1. **安装 cert-manager**
+执行以下命令安装 registry-proxy（v1.1.0+ 版本）：
 
-   如果集群中已经安装了 *cert-manager*，可以跳过这一步。这里提供快速安装的方式：
+```bash
+export VERSION=$(curl -s https://api.github.com/repos/ketches/registry-proxy/releases/latest | jq -r .tag_name)
 
-   ```bash
-   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
-   
-   # 代理地址
-   kubectl apply -f https://ghproxy.ketches.cn/https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
-   ```
+kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
 
-   > 官方文档： [Install cert-manager](https://cert-manager.io/docs/installation/)。
-
-2. **安装 registry-proxy**
-
-   ```bash
-   export LATEST=$(basename $(curl -s -w %{redirect_url} https://github.com/ketches/registry-proxy/releases/latest))
-   
-   kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
-   
-   # 代理地址
-   kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
-   ```
+# 代理地址
+kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
+```
 
 ## 配置
 
@@ -59,6 +49,7 @@ metadata:
   namespace: registry-proxy
 data:
   config.yaml: |
+    enabled: true
     proxies:
       docker.io: docker.ketches.cn
       registry.k8s.io: k8s.ketches.cn
@@ -71,6 +62,7 @@ data:
     - kube-system
     - kube-public
     - kube-node-lease
+    - registry-proxy
     includeNamespaces:
     - *
 ```
@@ -78,7 +70,8 @@ data:
 > Notes：
 >
 > 1. 默认使用 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 镜像代理服务；
-> 2. 默认排除 `kube-system`、`kube-public`、`kube-node-lease` 命名空间下的 Pod 容器镜像代理；
+> 2. `enabled` 为 `true` 时，开启 registry-proxy 代理功能，为 `false` 时，关闭 registry-proxy 代理功能；
+> 2. 默认排除 `kube-system`、`kube-public`、`kube-node-lease`、`registry-proxy` 命名空间下的 Pod 容器镜像代理；
 > 3. 修改上述配置实时生效，无需重启 registry-proxy；
 > 4. 可以自定义代理地址，例如：`docker.io: docker.m.daocloud.io`;
 > 5. 可以去除代理地址，免去代理；
@@ -100,10 +93,10 @@ data:
 使用 Docker 镜像 nginx 创建一个 Pod：
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
+kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 
 # 代理地址
-kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
+kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 ```
 
 示例中的 Pod 镜像为 `nginx:latest`，经过 registry-proxy 自动代理后，容器镜像变为 `docker.ketches.cn/library/nginx:latest`。
@@ -119,20 +112,21 @@ kubectl get pod dockerhub-nginx -o=jsonpath='{.spec.containers[*].image}'
 **卸载 registry-proxy**：
 
 ```bash
-export LATEST=$(basename $(curl -s -w %{redirect_url} https://github.com/ketches/registry-proxy/releases/latest))
-kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
+# uninstall v1.0.0 version for example
+export VERSION=v1.0.0
+kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
 
 # 代理地址
-kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/deploy/manifests.yaml
+kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
 ```
 
 **清理示例**：
 
 ```bash
-kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
+kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 
 # 代理地址
-kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$LATEST/examples/dockerhub-nginx.yaml
+kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 ```
 
 ## 代理参考

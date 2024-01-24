@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The Ketches Authors.
+Copyright 2024 The Ketches Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,14 @@ limitations under the License.
 package global
 
 const (
-	TargetNamespace     = "registry-proxy"
-	TargetConfigMap     = "registry-proxy-config"
-	TargetConfigMapPath = "config.yaml"
+	TargetName      = "registry-proxy"
+	TargetNamespace = "registry-proxy"
+
+	ConfigMapName = "registry-proxy-config"
+	ConfigMapPath = "config.yaml"
+
+	WebhookName               = "registry-proxy-webhook"
+	WebhookServiceTLSCertFile = "tls.crt"
+	WebhookServiceTLSKeyFile  = "tls.key"
+	WebhookServicePath        = "/mutate"
 )

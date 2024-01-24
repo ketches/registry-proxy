@@ -14,10 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package util
 
-import "github.com/ketches/registry-proxy/internal/cmd"
+// Ptr returns a pointer to v.
+func Ptr[T any](v T) *T {
+	return &v
+}
 
-func main() {
-	cmd.Run()
+// ValueIf returns v if cond is true, otherwise def.
+func ValueIf[T any](cond bool, v, def T) T {
+	if cond {
+		return v
+	}
+	return def
 }

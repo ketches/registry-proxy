@@ -2,10 +2,13 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: dockerhub-nginx
-  namespace: default
   labels:
     app: dockerhub-nginx
 spec:
   containers:
     - name: dockerhub-nginx
       image: nginx
+      resources:
+        limits:
+          memory: "256Mi"
+          cpu: "200m"

@@ -20,6 +20,9 @@
 # Go workspace file
 go.work
 
-.idea
-.vscode
-bin/*
+.idea/
+.vscode/
+bin/
+
+tls.crt
+tls.key

@@ -22,9 +22,11 @@ import (
 )
 
 var (
+	// client is a kubernetes client instance.
 	client kubernetes.Interface
 )
 
+// Client returns a kubernetes client.
 func Client() kubernetes.Interface {
 	if client == nil {
 		client = kubernetes.NewForConfigOrDie(ctrl.GetConfigOrDie())
