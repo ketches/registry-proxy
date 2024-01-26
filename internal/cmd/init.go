@@ -233,6 +233,14 @@ func constructWebhook() *admissionregistrationv1.MutatingWebhookConfiguration {
 		result.Webhooks[0].NamespaceSelector.MatchExpressions = append(result.Webhooks[0].NamespaceSelector.MatchExpressions, selector)
 	}
 
+	// set owner reference, so that the MutatingWebhookConfiguration will be deleted on uninstall
+	ns, _ := kube.Client().CoreV1().Namespaces().Get(context.Background(), global.TargetNamespace, metav1.GetOptions{})
+	if ns != nil {
+		result.SetOwnerReferences([]metav1.OwnerReference{
+			*metav1.NewControllerRef(ns, corev1.SchemeGroupVersion.WithKind("Namespace")),
+		})
+	}
+
 	return result
 }
 
