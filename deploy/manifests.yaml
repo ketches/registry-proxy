@@ -55,7 +55,7 @@ spec:
       serviceAccountName: registry-proxy
       containers:
       - name: registry-proxy
-        image: registry.cn-hangzhou.aliyuncs.com/ketches/registry-proxy:v1.1.1-alpha.1
+        image: registry.cn-hangzhou.aliyuncs.com/ketches/registry-proxy:v1.1.1
         imagePullPolicy: Always
         resources:
           requests:
