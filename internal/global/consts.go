@@ -24,6 +24,7 @@ const (
 	ConfigMapPath = "config.yaml"
 
 	WebhookName               = "registry-proxy-webhook"
+	WebhookTLSCertSecretName  = "registry-proxy-webhook-tls"
 	WebhookServiceTLSCertFile = "tls.crt"
 	WebhookServiceTLSKeyFile  = "tls.key"
 	WebhookServicePath        = "/mutate"

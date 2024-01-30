@@ -50,7 +50,7 @@ var (
 //
 // 1. Watch the ConfigMap and trigger config reset.
 //
-// 2. Generate the TLS cert and key and write them to the filesystem.
+// 2. Create or reset the TLS cert and key secret.
 //
 // 3. Create or reset the MutatingWebhookConfiguration to use the new cert and config.
 func Init() {
@@ -58,26 +58,9 @@ func Init() {
 
 	runConfigMapInformer()
 
-	generateCertKey()
+	applyTLSCertSecret()
 
 	applyWebhook()
-}
-
-// generateCertKey generates a self-signed cert and key and writes them to the filesystem.
-func generateCertKey() {
-	var err error
-	cert, key, err = certuitl.GenerateSelfSignedCertKey(dns, nil, []string{dns})
-	if err != nil {
-		log.Fatalf("Generate self-signed cert and key failed: %v", err)
-	}
-	err = os.WriteFile(global.WebhookServiceTLSCertFile, cert, 0644)
-	if err != nil {
-		log.Fatalf("Write cert failed: %v", err)
-	}
-	err = os.WriteFile(global.WebhookServiceTLSKeyFile, key, 0644)
-	if err != nil {
-		log.Fatalf("Write key failed: %v", err)
-	}
 }
 
 // configMapEventHandler handles the ConfigMap events.
@@ -244,6 +227,49 @@ func constructWebhook() *admissionregistrationv1.MutatingWebhookConfiguration {
 	return result
 }
 
+// applyTLSCertSecret applies the TLS cert and key secret.
+func applyTLSCertSecret() {
+	if secret, err := kube.Client().CoreV1().Secrets(global.TargetNamespace).Get(context.Background(), global.WebhookTLSCertSecretName, metav1.GetOptions{}); err != nil {
+		if errors.IsNotFound(err) {
+			cert, key, err = certuitl.GenerateSelfSignedCertKey(dns, nil, []string{dns})
+			if err != nil {
+				log.Fatalf("Generate self-signed cert and key failed: %v", err)
+			}
+			secret = &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      global.WebhookTLSCertSecretName,
+					Namespace: global.TargetNamespace,
+				},
+				Data: map[string][]byte{
+					corev1.TLSCertKey:       cert,
+					corev1.TLSPrivateKeyKey: key,
+				},
+				Type: corev1.SecretTypeTLS,
+			}
+			if _, err := kube.Client().CoreV1().Secrets(global.TargetNamespace).Create(context.Background(), secret, metav1.CreateOptions{}); err != nil {
+				if !errors.IsAlreadyExists(err) {
+					log.Fatalf("Create secret failed: %v", err)
+				}
+			}
+		} else {
+			log.Fatalf("Get secret failed: %v", err)
+		}
+	} else {
+		cert = secret.Data[corev1.TLSCertKey]
+		key = secret.Data[corev1.TLSPrivateKeyKey]
+	}
+
+	// create the cert and key files
+	err := os.WriteFile(global.WebhookServiceTLSCertFile, cert, 0644)
+	if err != nil {
+		log.Fatalf("Write cert failed: %v", err)
+	}
+	err = os.WriteFile(global.WebhookServiceTLSKeyFile, key, 0644)
+	if err != nil {
+		log.Fatalf("Write key failed: %v", err)
+	}
+}
+
 // applyWebhook applies the MutatingWebhookConfiguration.
 func applyWebhook() {
 	if !config.Enabled() {
@@ -258,7 +284,9 @@ func applyWebhook() {
 		if errors.IsNotFound(err) {
 			mwc = constructWebhook()
 			if _, err := kube.Client().AdmissionregistrationV1().MutatingWebhookConfigurations().Create(context.Background(), mwc, metav1.CreateOptions{}); err != nil {
-				log.Fatalf("Create MutatingWebhookConfigurations failed: %v", err)
+				if !errors.IsAlreadyExists(err) {
+					log.Fatalf("Create MutatingWebhookConfigurations failed: %v", err)
+				}
 			}
 		} else {
 			log.Fatalf("Get MutatingWebhookConfigurations failed: %v", err)
