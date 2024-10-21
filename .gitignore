@@ -23,6 +23,3 @@ go.work
 .idea/
 .vscode/
 bin/
-
-tls.crt
-tls.key

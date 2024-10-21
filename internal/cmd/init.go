@@ -27,7 +27,6 @@ import (
 	"github.com/ketches/registry-proxy/internal/global"
 	"github.com/ketches/registry-proxy/pkg/kube"
 	"github.com/ketches/registry-proxy/pkg/util"
-	"gopkg.in/yaml.v3"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -96,7 +95,7 @@ func runConfigMapInformer() {
 	})
 	if _, err := kube.Client().CoreV1().ConfigMaps(global.TargetNamespace).Get(context.Background(), global.ConfigMapName, metav1.GetOptions{}); err != nil && errors.IsNotFound(err) {
 		// ConfigMap not exists, create if from defaultConfig
-		out, err := yaml.Marshal(config.Get())
+		out, err := util.MarshalYAML(config.Get())
 		if err != nil {
 			log.Printf("Marshal config failed: %v", err)
 		} else {
@@ -171,7 +170,7 @@ func constructWebhook() *admissionregistrationv1.MutatingWebhookConfiguration {
 							Resources:   []string{"pods"},
 							Scope:       util.Ptr(admissionregistrationv1.NamespacedScope),
 						},
-						Operations: []admissionregistrationv1.OperationType{admissionregistrationv1.Create},
+						Operations: []admissionregistrationv1.OperationType{admissionregistrationv1.Create, admissionregistrationv1.Update},
 					},
 				},
 				SideEffects:    util.Ptr(admissionregistrationv1.SideEffectClassNone),
@@ -214,6 +213,17 @@ func constructWebhook() *admissionregistrationv1.MutatingWebhookConfiguration {
 			}
 		}
 		result.Webhooks[0].NamespaceSelector.MatchExpressions = append(result.Webhooks[0].NamespaceSelector.MatchExpressions, selector)
+	}
+
+	// Set namespace selector from config
+	if selector := config.NamespaceSelector(); len(selector) > 0 {
+		for k, v := range selector {
+			result.Webhooks[0].NamespaceSelector.MatchExpressions = append(result.Webhooks[0].NamespaceSelector.MatchExpressions, metav1.LabelSelectorRequirement{
+				Key:      k,
+				Operator: metav1.LabelSelectorOpIn,
+				Values:   []string{v},
+			})
+		}
 	}
 
 	// set owner reference, so that the MutatingWebhookConfiguration will be deleted on uninstall

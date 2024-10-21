@@ -19,7 +19,8 @@ package config
 import (
 	"log"
 
-	"gopkg.in/yaml.v3"
+	"github.com/ketches/registry-proxy/pkg/util"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 // config is the registry proxy config
@@ -32,6 +33,10 @@ type config struct {
 	ExcludeNamespaces []string `yaml:"excludeNamespaces"`
 	// IncludeNamespaces is the list of namespaces that will be proxied
 	IncludeNamespaces []string `yaml:"includeNamespaces"`
+	// PodSelector is the selector to select the pods that will be proxied
+	PodSelector labels.Set `yaml:"podSelector"`
+	// NamespaceSelector is the selector to select the namespaces that will be proxied
+	NamespaceSelector labels.Set `yaml:"namespaceSelector"`
 }
 
 var defaultProxies = map[string]string{
@@ -56,6 +61,8 @@ var defaultConfig = config{
 	IncludeNamespaces: []string{
 		"*",
 	},
+	PodSelector:       labels.Set{},
+	NamespaceSelector: labels.Set{},
 }
 
 // configInstance is the singleton config instance
@@ -86,11 +93,22 @@ func Enabled() bool {
 	return configInstance.Enabled
 }
 
+// PodSelector get the singleton config instance's pod selector
+func PodSelector() labels.Set {
+	return configInstance.PodSelector
+}
+
+// NamespaceSelector get the singleton config instance's namespace selector
+func NamespaceSelector() labels.Set {
+	return configInstance.NamespaceSelector
+}
+
 // Reset reset the singleton config instance.
 // If in is empty, reset to default config
 func Reset(in []byte) {
 	if len(in) > 0 {
-		err := yaml.Unmarshal([]byte(in), configInstance)
+		configInstance = &config{} // reset to empty config
+		err := util.UnmarshalYAML(in, configInstance)
 		if err != nil {
 			log.Printf("Reset config failed: %v", err)
 		}
@@ -103,7 +121,7 @@ func Reset(in []byte) {
 
 // printCurrentConfig print current config
 func printCurrentConfig() {
-	out, err := yaml.Marshal(configInstance)
+	out, err := util.MarshalYAML(configInstance)
 	if err != nil {
 		log.Printf("Marshal config failed: %v", err)
 		return
