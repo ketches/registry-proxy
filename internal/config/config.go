@@ -40,13 +40,12 @@ type config struct {
 }
 
 var defaultProxies = map[string]string{
-	"docker.io":            "docker.ketches.cn",
-	"registry.k8s.io":      "k8s.ketches.cn",
-	"quay.io":              "quay.ketches.cn",
-	"ghcr.io":              "ghcr.ketches.cn",
-	"gcr.io":               "gcr.ketches.cn",
-	"k8s.gcr.io":           "k8s-gcr.ketches.cn",
-	"docker.cloudsmith.io": "cloudsmith.ketches.cn",
+	"docker.io":       "docker.m.daocloud.io",
+	"registry.k8s.io": "k8s.m.daocloud.io",
+	"quay.io":         "quay.m.daocloud.io",
+	"ghcr.io":         "ghcr.m.daocloud.io",
+	"gcr.io":          "gcr.m.daocloud.io",
+	"k8s.gcr.io":      "k8s-gcr.m.daocloud.io",
 }
 
 var defaultConfig = config{

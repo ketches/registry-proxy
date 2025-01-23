@@ -20,7 +20,6 @@
 - `ghcr.io`
 - `gcr.io`
 - `k8s.gcr.io`
-- `docker.cloudsmith.io`
 
 ## 快速安装
 
@@ -32,7 +31,7 @@ export VERSION=$(curl -s https://api.github.com/repos/ketches/registry-proxy/rel
 kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
 
 # 代理地址
-kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
+kubectl apply -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
 ```
 
 ## 配置
@@ -51,13 +50,12 @@ data:
   config.yaml: |
     enabled: true
     proxies:
-      docker.io: docker.ketches.cn
-      registry.k8s.io: k8s.ketches.cn
-      quay.io: quay.ketches.cn
-      ghcr.io: ghcr.ketches.cn
-      gcr.io: gcr.ketches.cn
-      k8s.gcr.io: k8s-gcr.ketches.cn
-      docker.cloudsmith.io: cloudsmith.ketches.cn
+      docker.io: docker.m.daocloud.io
+      registry.k8s.io: k8s.m.daocloud.io
+      quay.io: quay.m.daocloud.io
+      ghcr.io: ghcr.m.daocloud.io
+      gcr.io: gcr.m.daocloud.io
+      k8s.gcr.io: k8s-gcr.m.daocloud.io
     excludeNamespaces:
     - kube-system
     - kube-public
@@ -77,11 +75,7 @@ data:
 
 **proxies：**
 
-镜像代理地址，键为需要代理的镜像地址，值为代理地址，键值对形式，默认使用 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 镜像代理服务；
-
-> Note：
->
-> 可以通过向 [ketches/cloudflare-registry-proxy](https://github.com/ketches/cloudflare-registry-proxy) 项目 [提交 Issue](https://github.com/ketches/cloudflare-registry-proxy/issues/new) 来申请添加新的国外镜像代理服务
+镜像代理地址，键为需要代理的镜像地址，值为代理地址，键值对形式，默认使用 [DaoCloud/public-image-mirror](https://github.com/DaoCloud/public-image-mirror) 镜像代理服务；
 
 **excludeNamespaces：**
 
@@ -111,7 +105,7 @@ Pod 选择器，键值对形式，默认为空，支持 Pod 选择器，例如�
 6. 通过 `proxies` 参数判断 Pod 中的容器镜像是否需要代理，如果是，继续流程；
 7. 通过 `proxies` 参数替换容器镜像地址，完成代理，Mutating Webhook 响应请求，结束流程。
 
-![202410211328755.png](https://images.poneding.com/2024/10/202410211328755.png)
+![schematic.png](./docs/images/schematic.png)
 
 ## 使用示例
 
@@ -121,10 +115,10 @@ Pod 选择器，键值对形式，默认为空，支持 Pod 选择器，例如�
 kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 
 # 代理地址
-kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
+kubectl apply -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 ```
 
-示例中的 Pod 镜像为 `nginx:latest`，经过 `registry-proxy` 自动代理后，容器镜像变为 `docker.ketches.cn/library/nginx:latest`。
+示例中的 Pod 镜像为 `nginx:latest`，经过 `registry-proxy` 自动代理后，容器镜像变为 `docker.m.daocloud.io/library/nginx:latest`。
 
 验证：
 
@@ -142,7 +136,7 @@ export VERSION=v1.0.0
 kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
 
 # 代理地址
-kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
+kubectl delete -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/deploy/manifests.yaml
 ```
 
 **清理示例**：
@@ -151,17 +145,17 @@ kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/k
 kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 
 # 代理地址
-kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
+kubectl delete -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/$VERSION/examples/dockerhub-nginx.yaml
 ```
 
 ## 代理参考
 
 | 镜像地址 | 代理地址 |
 | --- | --- |
-| nginx:latest | docker.ketches.cn/library/nginx:latest |
-| ketches/registry-proxy:latest | docker.ketches.cn/ketches/registry-proxy:latest |
-| registry.k8s.io/pause:3.9 | k8s.ketches.cn/pause:3.9 |
-| registry.k8s.io/ingress-nginx/controller:v1.8.2 | k8s.ketches.cn/ingress-nginx/controller:v1.8.2 |
+| nginx:latest | docker.m.daocloud.io/library/nginx:latest |
+| ketches/registry-proxy:latest | docker.m.daocloud.io/ketches/registry-proxy:latest |
+| registry.k8s.io/pause:3.9 | k8s.m.daocloud.io/pause:3.9 |
+| registry.k8s.io/ingress-nginx/controller:v1.8.2 | k8s.m.daocloud.io/ingress-nginx/controller:v1.8.2 |
 
 ## ✨ Stars
 
