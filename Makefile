@@ -1,6 +1,6 @@
 DOCKER_IMAGE := ketches/registry-proxy
 ALIYUN_IMAGE := registry.cn-hangzhou.aliyuncs.com/ketches/registry-proxy
-VERSION := v1.3.1-alpha.0
+VERSION := v1.3.1
 
 .PHONY: build
 build:
