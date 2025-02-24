@@ -40,4 +40,4 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ vars.ALIYUNACR_REGISTRY }}/${{ vars.ALIYUNACR_NAMESPACE }}/${{ env.IMAGE }}:${{ env.VERSION }},${{ vars.ALIYUNACR_REGISTRY }}/{{ vars.ALIYUNACR_NAMESPACE }}/${{ env.IMAGE }}:latest,${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE }}:${{ env.VERSION }},{{ vars.DOCKER_USERNAME }}/${{ env.IMAGE }}:latest
+          tags: ${{ vars.ALIYUNACR_REGISTRY }}/${{ vars.ALIYUNACR_NAMESPACE }}/${{ env.IMAGE }}:${{ env.VERSION }},${{ vars.ALIYUNACR_REGISTRY }}/${{ vars.ALIYUNACR_NAMESPACE }}/${{ env.IMAGE }}:latest,${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE }}:${{ env.VERSION }},${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE }}:latest
