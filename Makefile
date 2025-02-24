@@ -7,7 +7,7 @@ build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/amd64/registry-proxy main.go
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/arm64/registry-proxy main.go
 	docker buildx create --use --name gobuilder 2>/dev/null || docker buildx use gobuilder
-	docker buildx build --platform linux/amd64,linux/arm64 -t $(DOCKER_IMAGE):$(VERSION) -t $(ALIYUN_IMAGE):$(VERSION) --push .
+	docker buildx build --platform linux/amd64,linux/arm64 -t $(DOCKER_IMAGE):$(VERSION) -t $(ALIYUN_IMAGE):$(VERSION) --push . -f Dockerfile.local
 
 .PHONY: deploy
 deploy:
