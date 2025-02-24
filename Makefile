@@ -1,6 +1,6 @@
 DOCKER_IMAGE := ketches/registry-proxy
 ALIYUN_IMAGE := registry.cn-hangzhou.aliyuncs.com/ketches/registry-proxy
-VERSION := v1.3.1
+VERSION := v1.3.2
 
 .PHONY: build
 build:
@@ -16,3 +16,8 @@ deploy:
 .PHONY: undeploy
 undeploy:
 	kubectl delete -f deploy/manifests.yaml
+
+.PHONY: release
+release:
+	git tag -a $(VERSION) -m "Release $(VERSION)"
+	git push origin $(VERSION)
