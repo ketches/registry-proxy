@@ -7,7 +7,7 @@ import (
 )
 
 // MarshalYAML marshals the given value into YAML format.
-func MarshalYAML(v interface{}) ([]byte, error) {
+func MarshalYAML(v any) ([]byte, error) {
 	var buffer bytes.Buffer
 	encoder := yaml.NewEncoder(&buffer)
 	encoder.SetIndent(2)
@@ -16,6 +16,6 @@ func MarshalYAML(v interface{}) ([]byte, error) {
 }
 
 // UnmarshalYAML unmarshals the given YAML data into the given value.
-func UnmarshalYAML(in []byte, out interface{}) error {
+func UnmarshalYAML(in []byte, out any) error {
 	return yaml.Unmarshal(in, out)
 }

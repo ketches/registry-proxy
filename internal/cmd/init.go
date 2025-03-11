@@ -64,14 +64,14 @@ func Init() {
 
 // configMapEventHandler handles the ConfigMap events.
 var configMapEventHandler = cache.ResourceEventHandlerFuncs{
-	AddFunc: func(obj interface{}) {
+	AddFunc: func(obj any) {
 		cm, ok := obj.(*corev1.ConfigMap)
 		if ok {
 			log.Printf("ConfigMap %s/%s added", cm.Namespace, cm.Name)
 			tryResetConfigFromConfigMap(obj.(*corev1.ConfigMap))
 		}
 	},
-	UpdateFunc: func(oldObj, newObj interface{}) {
+	UpdateFunc: func(oldObj, newObj any) {
 		oldCM, ok1 := oldObj.(*corev1.ConfigMap)
 		newCM, ok2 := newObj.(*corev1.ConfigMap)
 		if ok1 && ok2 && oldCM.ResourceVersion != newCM.ResourceVersion {
@@ -79,7 +79,7 @@ var configMapEventHandler = cache.ResourceEventHandlerFuncs{
 			tryResetConfigFromConfigMap(newCM)
 		}
 	},
-	DeleteFunc: func(obj interface{}) {
+	DeleteFunc: func(obj any) {
 		cm, ok := obj.(*corev1.ConfigMap)
 		if ok {
 			log.Printf("ConfigMap %s/%s deleted", cm.Namespace, cm.Name)
