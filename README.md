@@ -58,7 +58,7 @@ data:
     - kube-node-lease
     - registry-proxy
     includeNamespaces:
-    - *
+    - "*"
     podSelector: {}
     namespaceSelector: {}
 ```
