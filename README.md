@@ -24,10 +24,10 @@
 ## 快速安装
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/deploy/manifests.yaml
+kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
 
 # 代理地址
-kubectl apply -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/deploy/manifests.yaml
+kubectl apply -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
 ```
 
 ## 配置
@@ -108,10 +108,7 @@ Pod 选择器，键值对形式，默认为空，支持 Pod 选择器，例如�
 使用 Docker 镜像 nginx 创建一个 Pod：
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/examples/dockerhub-nginx.yaml
-
-# 代理地址
-kubectl apply -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/examples/dockerhub-nginx.yaml
+kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
 ```
 
 示例中的 Pod 镜像为 `nginx:latest`，经过 `registry-proxy` 自动代理后，容器镜像变为 `docker.linkos.org/library/nginx:latest`。
@@ -127,19 +124,13 @@ kubectl get pod dockerhub-nginx -o=jsonpath='{.spec.containers[*].image}'
 **卸载**：
 
 ```bash
-kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/deploy/manifests.yaml
-
-# 代理地址
-kubectl delete -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/deploy/manifests.yaml
+kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
 ```
 
 **清理示例**：
 
 ```bash
-kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/examples/dockerhub-nginx.yaml
-
-# 代理地址
-kubectl delete -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/refs/heads/master/examples/dockerhub-nginx.yaml
+kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
 ```
 
 ## 代理参考
