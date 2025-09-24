@@ -23,11 +23,10 @@
 
 ## 快速安装
 
+> 遇到GitHub 访问问题，可以使用 [GitHub Proxy](https://gh-proxy.com/) 代理访问。
+
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
-
-# 代理地址
-kubectl apply -f https://ghproxy.cc/https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
 ```
 
 ## 配置
