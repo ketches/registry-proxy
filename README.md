@@ -23,10 +23,11 @@
 
 ## 快速安装
 
-> 遇到GitHub 访问问题，可以使用 [GitHub Proxy](https://gh-proxy.com/) 代理访问。
-
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
+
+# 使用 Ketches GitHub 代理
+kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
 ```
 
 ## 配置
@@ -108,6 +109,9 @@ Pod 选择器，键值对形式，默认为空，支持 Pod 选择器，例如�
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
+
+# 使用 Ketches GitHub 代理
+kubectl apply -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
 ```
 
 示例中的 Pod 镜像为 `nginx:latest`，经过 `registry-proxy` 自动代理后，容器镜像变为 `docker.linkos.org/library/nginx:latest`。
@@ -124,12 +128,18 @@ kubectl get pod dockerhub-nginx -o=jsonpath='{.spec.containers[*].image}'
 
 ```bash
 kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
+
+# 使用 Ketches GitHub 代理
+kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/master/deploy/manifests.yaml
 ```
 
 **清理示例**：
 
 ```bash
 kubectl delete -f https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
+
+# 使用 Ketches GitHub 代理
+kubectl delete -f https://ghproxy.ketches.cn/https://raw.githubusercontent.com/ketches/registry-proxy/master/examples/dockerhub-nginx.yaml
 ```
 
 ## 代理参考
